@@ -30,8 +30,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between">
           <div className="flex items-center gap-6 group cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="relative">
-              <img src="/assets/logo.png" alt="Milchukova Bride Logo" className="w-20 h-20 object-contain transition-transform group-hover:scale-105" />
-              <div className="absolute inset-0 bg-accent/10 rounded-full scale-125 -z-10 group-hover:scale-150 transition-transform"></div>
+              <img src="/assets/logo.png" alt="Milchukova Bridal Logo" className="w-24 h-24 object-contain transition-transform group-hover:scale-105" />
             </div>
           </div>
           <a href="#agendar" className="bg-ink text-paper px-8 py-4 text-xs uppercase tracking-[0.2em] font-semibold hover:bg-accent transition-all rounded-sm shadow-xl shadow-ink/5">
@@ -235,7 +234,7 @@ export default function App() {
       <footer className="bg-paper border-t border-ink/5 py-24">
         <div className="max-w-7xl mx-auto px-6 text-center space-y-12">
           <div className="flex flex-col items-center gap-6">
-             <img src="/assets/logo.png" alt="Logo Footer" className="w-32 h-32 object-contain" />
+             <img src="/assets/logo.png" alt="Logo Footer" className="w-40 h-40 object-contain" />
           </div>
           <div className="h-[1px] w-40 bg-accent/20 mx-auto"></div>
           <div className="text-sm uppercase tracking-[0.4em] font-bold text-ink/50">
