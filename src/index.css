@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  
+  --color-ink: #1a1a1a;
+  --color-paper: #f9f8f6;
+  --color-accent: #1a1a1a; /* Agora usando a mesma cor da logo em vez de dourado */
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: var(--font-serif);
+}
+
+.editorial-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center px-8 py-4 bg-ink text-paper text-sm uppercase tracking-widest font-medium transition-all duration-300 hover:bg-ink/90 hover:scale-[1.02];
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center px-8 py-4 border border-ink text-ink text-sm uppercase tracking-widest font-medium transition-all duration-300 hover:bg-ink hover:text-paper;
+}
+
+.input-field {
+  @apply w-full border-b border-ink/30 bg-transparent py-3 text-ink placeholder:text-ink/50 focus:border-ink focus:outline-none transition-colors rounded-none;
+}
+
+@keyframes slow-zoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 20s ease-in-out infinite alternate;
+}
+
