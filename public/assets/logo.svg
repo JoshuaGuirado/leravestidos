@@ -1,0 +1,9 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+    .logo-text { font-family: 'Playfair Display', serif; font-weight: 400; font-size: 110px; }
+  </style>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <circle cx="100" cy="100" r="91" fill="none" stroke="currentColor" stroke-width="1.2"/>
+  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" class="logo-text" fill="currentColor">M.</text>
+</svg>
