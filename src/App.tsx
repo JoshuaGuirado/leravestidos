@@ -44,49 +44,16 @@ function TiltImage({ src, alt, className = "" }: { src: string, alt: string, cla
       onMouseLeave={onMouseLeave}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
     >
-      <img src={src} alt={alt} className="w-full h-full object-cover shadow-2xl" style={{ transform: "translateZ(50px)" }} />
+      <img src={src} alt={alt} loading="lazy" decoding="async" className="w-full h-full object-cover shadow-2xl" style={{ transform: "translateZ(50px)" }} />
     </motion.div>
-  );
-}
-
-function FloatingParticles() {
-  return (
-    <div className="fixed inset-0 pointer-events-none z-[5] overflow-hidden">
-      {[...Array(30)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-2 h-2 bg-accent/60 rounded-full blur-[2px]"
-          initial={{ 
-            x: Math.random() * 100 + "%", 
-            y: "110%",
-            opacity: 0 
-          }}
-          animate={{ 
-            y: "-10%",
-            opacity: [0, 0.6, 0],
-            scale: [0.5, 1.5, 0.5],
-            x: [null, (Math.random() - 0.5) * 300 + "%"]
-          }}
-          transition={{ 
-            duration: Math.random() * 15 + 10, 
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: Math.random() * 20
-          }}
-          style={{ 
-            left: `${Math.random() * 100}%`
-          }}
-        />
-      ))}
-    </div>
   );
 }
 
 function LightBeams() {
   return (
-    <div className="fixed inset-0 pointer-events-none z-[4] overflow-hidden opacity-50">
+    <div className="fixed inset-0 pointer-events-none z-[4] overflow-hidden opacity-50 motion-reduce:hidden">
       <motion.div 
-        className="absolute -top-[50%] -left-[10%] w-[150%] h-[200%] bg-gradient-to-br from-accent/20 via-transparent to-accent/10 rotate-12 blur-[120px]"
+        className="absolute -top-[50%] -left-[10%] w-[150%] h-[200%] bg-[radial-gradient(ellipse_at_30%_30%,rgba(197,160,89,0.14),transparent_55%),radial-gradient(ellipse_at_70%_70%,rgba(197,160,89,0.07),transparent_55%)] rotate-12 will-change-transform"
         animate={{ 
           x: [-40, 40],
           opacity: [0.4, 0.8, 0.4]
@@ -98,7 +65,7 @@ function LightBeams() {
         }}
       />
       <motion.div 
-        className="absolute top-[20%] -right-[20%] w-[100%] h-[150%] bg-gradient-to-bl from-accent/15 via-transparent to-accent/20 -rotate-12 blur-[150px]"
+        className="absolute top-[20%] -right-[20%] w-[100%] h-[150%] bg-[radial-gradient(ellipse_at_70%_30%,rgba(197,160,89,0.1),transparent_55%),radial-gradient(ellipse_at_30%_70%,rgba(197,160,89,0.14),transparent_55%)] -rotate-12 will-change-transform"
         animate={{ 
           y: [-50, 50],
           opacity: [0.3, 0.7, 0.3]
@@ -114,15 +81,54 @@ function LightBeams() {
   );
 }
 
-function ParallaxImage({ src, alt, className = "" }: { src: string, alt: string, className?: string }) {
+function ParallaxImage({ src, srcSet, alt, className = "" }: { src: string, srcSet?: string, alt: string, className?: string }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
 
   return (
     <div ref={ref} className={`overflow-hidden relative ${className}`}>
-      <motion.img src={src} alt={alt} style={{ y, scale: 1.2 }} className="w-full h-full object-cover" />
+      <motion.img
+        src={src}
+        srcSet={srcSet}
+        sizes="100vw"
+        alt={alt}
+        fetchPriority="high"
+        decoding="async"
+        style={{ y, scale: 1.2 }}
+        className="w-full h-full object-cover will-change-transform"
+      />
     </div>
+  );
+}
+
+// Só baixa e toca o vídeo quando ele está perto da tela; pausa quando sai
+function LazyVideo({ src, poster }: { src: string, poster: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (!video.src) video.src = src;
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    }, { rootMargin: "200px" });
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    <video
+      ref={ref}
+      className="w-full h-full object-cover"
+      loop muted playsInline
+      preload="none"
+      poster={poster}
+    />
   );
 }
 
@@ -198,7 +204,7 @@ export default function App() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 100);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -223,7 +229,6 @@ export default function App() {
     <div className="min-h-screen mesh-bg text-ink overflow-x-hidden font-sans selection:bg-accent selection:text-paper perspective-2000">
       <AnimatedShaderBackground />
       <CustomCursor />
-      <FloatingParticles />
       <LightBeams />
       
       {/* Barra de progresso do scroll */}
@@ -232,8 +237,8 @@ export default function App() {
       {/* NAVIGATION ADAPTATIVA INTELIGENTE */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 border-b 
         ${isDarkSectionInView 
-          ? 'bg-ink/95 backdrop-blur-3xl border-white/10 py-4' 
-          : scrolled ? 'bg-white/95 backdrop-blur-2xl border-ink/5 py-4' : 'bg-transparent border-transparent py-6'}`}>
+          ? 'bg-ink/95 backdrop-blur-md border-white/10 py-4' 
+          : scrolled ? 'bg-white/95 backdrop-blur-md border-ink/5 py-4' : 'bg-transparent border-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-6 group cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="relative">
@@ -252,7 +257,7 @@ export default function App() {
       {/* HERO SECTION */}
       <section className="relative h-screen flex items-center justify-center pt-24 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <ParallaxImage src="/assets/hero_4k.jpg" alt="Noiva Hero" className="h-full w-full" />
+          <ParallaxImage src="/assets/hero.webp" srcSet="/assets/hero-mobile.webp 900w, /assets/hero.webp 2000w" alt="Noiva Hero" className="h-full w-full" />
           {/* Sofisticado gradiente lateral para legibilidade */}
           <div className="absolute inset-0 bg-gradient-to-r from-paper via-paper/20 to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-paper"></div>
@@ -322,12 +327,7 @@ export default function App() {
                 className="w-full lg:w-1/2 group"
               >
                 <div className="relative aspect-[9/16] max-w-[420px] mx-auto rounded-3xl overflow-hidden shadow-2xl bg-ink/5 border border-ink/5">
-                   <video 
-                     className="w-full h-full object-cover" 
-                     src="/videos/reel1.mp4" 
-                     autoPlay loop muted playsInline
-                     poster="/assets/bride_front.png"
-                   />
+                   <LazyVideo src="/videos/reel1.mp4" poster="/assets/bride_front.webp" />
                 </div>
               </motion.div>
               <motion.div 
@@ -356,12 +356,7 @@ export default function App() {
                 className="w-full lg:w-1/2"
               >
                 <div className="relative aspect-[9/16] max-w-[420px] mx-auto rounded-3xl overflow-hidden shadow-2xl bg-ink/5 border border-ink/5">
-                   <video 
-                     className="w-full h-full object-cover" 
-                     src="/videos/reel2.mp4" 
-                     autoPlay loop muted playsInline
-                     poster="/assets/bride_profile.jpg"
-                   />
+                   <LazyVideo src="/videos/reel2.mp4" poster="/assets/bride_profile.webp" />
                 </div>
               </motion.div>
               <motion.div 
@@ -436,7 +431,7 @@ export default function App() {
                  <div className="absolute bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-accent/30"></div>
                  
                  <div className="shadow-2xl overflow-hidden relative z-10">
-                   <TiltImage src="/assets/user_bride_essencia_final.png" alt="Essência Milchukova" className="aspect-[3/4] w-full" />
+                   <TiltImage src="/assets/user_bride_essencia_final.webp" alt="Essência Milchukova" className="aspect-[3/4] w-full" />
                  </div>
                  
                  {/* Elementos decorativos animados */}
@@ -453,8 +448,6 @@ export default function App() {
       <section ref={darkSectionRef} id="alma-section" className="py-32 md:py-56 bg-ink text-paper overflow-hidden relative">
         {/* Camadas decorativas de fundo */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#222,transparent)] opacity-40 animate-pulse-slow"></div>
-        <div className="absolute top-20 left-20 w-96 h-96 border border-accent/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-20 w-[30rem] h-[30rem] border border-accent/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '3s' }}></div>
         
         {/* Molduras lineares decorativas estilo editorial */}
         <motion.div 
@@ -481,7 +474,7 @@ export default function App() {
                    <div className="absolute inset-0 translate-x-4 translate-y-4 bg-accent/5 -z-10"></div>
                    
                    <div className="aspect-[4/5] rounded-none overflow-hidden relative z-10 shadow-2xl border border-white/10 group">
-                      <TiltImage src="/assets/user_bride_alma_veil.png" alt="A Alma Milchukova" className="h-full w-full" />
+                      <TiltImage src="/assets/user_bride_alma_veil.webp" alt="A Alma Milchukova" className="h-full w-full" />
                       <div className="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent pointer-events-none"></div>
                    </div>
                 </div>
@@ -557,7 +550,7 @@ export default function App() {
             
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="relative">
               <div className="aspect-[4/5] rounded-none overflow-hidden shadow-2xl skew-y-1">
-                <img src="/assets/bride_front.png" alt="Noiva Milchukova" className="w-full h-full object-cover" />
+                <img src="/assets/bride_front.webp" alt="Noiva Milchukova" loading="lazy" decoding="async" className="w-full h-full object-cover" />
               </div>
             </motion.div>
           </div>
@@ -577,8 +570,8 @@ export default function App() {
                 <div className="flex items-center justify-center gap-6 text-ink/60 font-bold tracking-[0.3em] text-xs">
                     <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-accent" /> MARINGÁ - PR</span>
                     <div className="flex items-center gap-3 border-l border-ink/10 pl-6 ml-2">
-                      <img src="https://flagcdn.com/w40/ru.png" className="w-7 h-5 border border-ink/5 shadow-sm" alt="Rússia" />
-                      <img src="https://flagcdn.com/w40/br.png" className="w-7 h-5 border border-ink/5 shadow-sm" alt="Brasil" />
+                      <img src="https://flagcdn.com/w40/ru.png" loading="lazy" className="w-7 h-5 border border-ink/5 shadow-sm" alt="Rússia" />
+                      <img src="https://flagcdn.com/w40/br.png" loading="lazy" className="w-7 h-5 border border-ink/5 shadow-sm" alt="Brasil" />
                     </div>
                 </div>
              </div>
